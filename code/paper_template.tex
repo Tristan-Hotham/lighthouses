@@ -1,0 +1,145 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\newfontfamily\headfont{Inter}[UprightFont=*-ExtraBold,BoldFont=*-ExtraBold,Extension=.otf,Path=/usr/share/fonts/opentype/inter/]
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{graphicx,booktabs,float,caption,array,xcolor,longtable}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage[round]{natbib}
+\usepackage{setspace}
+\setstretch{1.05}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\titleformat{\section}{\headfont\Large}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\headfont\large}{\thesubsection}{0.8em}{}
+\captionsetup{font=small,labelfont=bf}
+\urlstyle{same}
+\hypersetup{pdftitle={Lighthouses of the World},pdfauthor={Tristan Hotham}}
+
+\begin{document}
+\begin{center}
+{\Large\bfseries Lighthouses of the World\par}
+\vspace{0.4em}
+{\large Where they stand, when they were built, the oldest and the tallest:\\{{n.items|int}} lighthouses in Wikidata, measured against the length of the coast\par}
+\vspace{1.2em}
+{\large Tristan Hotham\par}
+\vspace{0.3em}
+{\small Independent researcher\\
+ORCID: 0000-0003-4931-9349\\
+DOI: @@DOILINK@@\par}
+\vspace{0.8em}
+2026
+\end{center}
+
+\begin{quote}
+\small
+\begin{center}\textbf{Abstract}\end{center}
+I map every lighthouse in Wikidata that has coordinates, {{n.items|int}} after removing keepers' houses and replicas, and measure the lights against the length of each country's sea coast on Natural Earth's 1:10m map. Wikidata dates {{n.dated|int}} of them. Building follows the industrial century: outside Sweden, new lights rise from {{timeline.nosw_1820s|int}} in the 1820s to a peak of {{timeline.peak_n_nosw|int}} in the {{timeline.peak_dec_nosw|raw}}s, stay above three hundred a decade until the First World War and then fall, to about {{timeline.nosw_1970_2019_avg|int}} a decade from 1970 to 2019, a decline that coincides with automation and satellite navigation. Sweden's {{country.top.0.n|int}} lights, {{country.swe_pct|pc}} of the total, show a second, twentieth-century wave of small lights that peaks in the {{timeline.swe_peak_dec|raw}}s, which I read as the trace of a national list loaded in full. Per 1,000 km of coast, Sweden ({{country.dense.0.per1000|int}}) and Finland ({{country.dense.1.per1000|int}}) lead, against {{country.world_per1000|f1}} for the world; all ten densest regional coasts are Swedish or Finnish, and outside those two countries Lower Saxony and Connecticut lead. The oldest dated lighthouse still standing is the Tower of Hercules, dated {{spot.Tower of Hercules.year|yr}}; the tallest traditional tower, from Wikipedia's list, is the Île Vierge lighthouse at {{tallest.top.m|int}}~m. Coverage is very uneven: {{n.sl_le1_pct|pc}} of the lights have at most one Wikipedia article, and some coastal countries have none in Wikidata. The map is as much a map of the record as of the sea.
+
+\textbf{Keywords:} lighthouses; maritime history; navigation; Wikidata; coastline length; Natural Earth; open data; coverage bias; mapping
+\end{quote}
+
+\section{Introduction}
+A lighthouse is a building with a single public purpose: to mark a coast that has killed ships, so that it kills fewer. The oldest that still stand are Roman; the great majority were built in the nineteenth and early twentieth centuries, when iron construction, the Fresnel lens and the growth of steam shipping made it possible, and necessary, to light the world's main coasts systematically. Automation through the twentieth century and satellite navigation at its end changed their role again.
+
+No complete open register of the world's lighthouses exists. National lists of lights are kept by hydrographic offices, and the most complete public directory is the work of one enthusiast \citep{rowlett}. Wikidata \citep{wikidata}, the free knowledge base behind Wikipedia, holds thousands of lighthouses, some added one by one with Wikipedia articles and some loaded in bulk from national lists. This paper uses it to ask four simple questions: where are the lights, relative to how much coast each country has; when were they built; which are the oldest still standing and the tallest; and how far can the record be trusted? An interactive version, with a day map and a ``night glow'' map, is at \url{{{meta.page}}}.
+
+\section{Data}
+\textbf{Wikidata.} Every item that is an instance of lighthouse (Q39715) or one of its subclasses and has coordinates (P625), retrieved through the QLever service in {{meta.retrieved|raw}}, with its English label, number of Wikipedia sitelinks, country (P17), inception (P571), height (P2048) and focal height (P2923). The extract has {{n.rows|int}} rows, one per combination of values, for {{n.items_raw|int}} items. Heights were extracted as amounts without their units, which in Wikidata may be metres or feet.
+
+\textbf{Wikipedia.} The English Wikipedia ``List of tallest lighthouses'' \citep{wikitall}, revision {{tallest.revid|raw}}, which lists {{tallest.n|int}} traditional lighthouses (as defined by \citealt{rowlett}) of 60~m or more with height in feet and metres, construction, place and year.
+
+\textbf{Natural Earth.} Countries at 1:10m and 1:50m, states and provinces at 1:10m and populated places \citep{naturalearth}, public domain.
+
+\section{Methods}
+\subsection{Cleaning}
+I kept one row per item, taking the earliest inception year where there are several ({{n.multi_year|int}} items) and all distinct height values. I removed {{n.dropped|int}} items that are buildings at light stations or modern replicas (labels containing ``keeper'', ``accommodation block'', ``barrack block'' or ``replica'') and {{n.nocoord|int}} item whose coordinates are recorded as unknown, leaving {{n.items|int}}. {{n.no_label|int}} lights ({{n.no_label_pct|pc}}) have no English label and are identified by their Wikidata number.
+
+\subsection{Countries, sea and inland lights}
+Each light is placed in the Natural Earth 1:10m map unit that contains it; for lights on rocks offshore, the nearest unit within {{meta.near_km|int}}~km ({{n.how.nearest|int}} lights); beyond that, the country Wikidata gives ({{n.how.wikidata|int}}). Map units are used as they are, so dependencies such as Greenland, Puerto Rico and the Faroe Islands count separately; Åland is merged into Finland. The location-based country differs from Wikidata's own statement for {{n.wd_country_mismatch|int}} lights, mostly territories that Natural Earth maps on their own (Hong Kong, Puerto Rico), disputed areas, and offshore lights near a border; country assignment follows Natural Earth's boundaries throughout. A light on land more than {{meta.sea_km|int}}~km from the sea coast (below) is a lake or river light: {{n.inland|int}} of them ({{n.inland_pct|pc}}), mostly on the Great Lakes and the lakes of Sweden and Finland. They are counted in the totals but not in the per-coast figures.
+
+\subsection{Coast length}
+Natural Earth's standard country polygons include lakes, so a country's outline consists of its sea coast and its land borders. I take each country's 1:10m outline, remove the parts within about 300~m of any neighbouring country, and measure what remains on the WGS84 ellipsoid. The same procedure on the 1:10m states and provinces gives regional coasts. The world total at this scale is {{country.world_coast_km|int}}~km. Coastline length depends on the scale of measurement \citep{mandelbrot}: at 1:10m, fjords, skerries and small islands are smoothed or missing, so these lengths compare places on a common footing but are not true lengths. Densities are given for {{country.dense_rule|raw}} and for {{regions.rule|raw}}.
+
+\subsection{Oldest and tallest}
+Dates are Wikidata's inception years as given; many early dates are rounded and often refer to the first light on the site rather than the present tower. Wikidata's ``still standing'' status is not part of the extract, so for the {{n.oldest_checked|int}} best known of the oldest lights I marked by hand, from their published histories and the Wikipedia list, whether the tower stands, was rebuilt or is lost; others are marked ``not checked''. Because heights lack units, I rank the tallest from the Wikipedia list only, and use Wikidata heights only to test how often they are in feet.
+
+\section{Results}
+\subsection{Where}
+Table~\ref{tab:countries} and Figure~\ref{fig:countries} give the counts. Sweden has {{country.top.0.n|int}} lights, the United States {{country.by_iso.USA.n|int}}, Finland {{country.by_iso.FIN.n|int}}, Canada {{country.by_iso.CAN.n|int}} and the United Kingdom {{country.by_iso.GBR.n|int}}; the top three hold {{country.top3_pct|pc}} of the total. {{n.countries|int}} countries and territories have at least one. Per 1,000~km of coast, Sweden ({{country.dense.0.per1000|f1}}) and Finland ({{country.dense.1.per1000|f1}}) are far ahead of Tunisia ({{country.dense.2.per1000|f1}}) and Germany ({{country.dense.3.per1000|f1}}); France ({{country.by_iso.FRA.per1000|f1}}), Spain ({{country.by_iso.ESP.per1000|f1}}) and the United Kingdom ({{country.by_iso.GBR.per1000|f1}}) are close together. The lowest densities belong to countries with very long coasts: Canada {{country.by_iso.CAN.per1000|f1}}, Russia {{country.by_iso.RUS.per1000|f1}} and Indonesia {{country.by_iso.IDN.per1000|f1}}.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_glow_world.png}
+\caption{Every lighthouse in Wikidata, drawn as a glow on a night map (Equal Earth projection).}\label{fig:glow}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_era_map.png}
+\caption{Lighthouses by the period of their earliest Wikidata inception date.}\label{fig:era}\end{figure}
+
+{{TABLE_COUNTRIES}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_countries.png}
+\caption{Lighthouses by country (left; blue: lake and river lights) and sea lights per 1,000~km of coast (right).}\label{fig:countries}\end{figure}
+
+The densest regional coasts (Table~\ref{tab:regions}, Figure~\ref{fig:regions}) are all in Sweden and Finland: Västra Götaland, on the Skagerrak, has {{regions.top.0.per100|f1}} sea lights per 100~km, Blekinge {{regions.top.1.per100|f1}} and Skåne {{regions.top.2.per100|f1}}. Outside Sweden and Finland the densest are {{regions.top_outside_nordic.0.name|raw}} ({{regions.top_outside_nordic.0.per100|f1}}), on the Wadden Sea, {{regions.top_outside_nordic.1.name|raw}} ({{regions.top_outside_nordic.1.per100|f1}}), on Long Island Sound, and {{regions.top_outside_nordic.2.name|raw}} in Tunisia ({{regions.top_outside_nordic.2.per100|f1}}). Figure~\ref{fig:north} shows northern Europe at night.
+
+{{TABLE_REGIONS}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=.92\textwidth]{f_regions.png}
+\caption{Sea lights per 100~km of coast for {{regions.rule|raw}}: the twelve densest, and the densest outside Sweden and Finland.}\label{fig:regions}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=.8\textwidth]{f_glow_north.png}
+\caption{Northern Europe at night, one glow per lighthouse.}\label{fig:north}\end{figure}
+
+\subsection{When}
+Of the {{n.dated|int}} dated lights, {{n.before1500|int}} are dated before 1500 and {{n.before1800|int}} before 1800 (Figure~\ref{fig:timeline}). Outside Sweden, new lights rise from {{timeline.nosw_1820s|int}} in the 1820s to {{timeline.nosw_1870s|int}} in the {{timeline.peak_dec_nosw|raw}}s and remain above 300 a decade until the 1910s; the United States peaks in the {{timeline.usa_peak_dec|raw}}s ({{timeline.usa_peak_n|int}}). The average falls from {{timeline.nosw_1850_1909_avg|int}} a decade in 1850 to 1909 to {{timeline.nosw_1970_2019_avg|int}} in 1970 to 2019, a factor of {{timeline.nosw_drop_x|f1}}. Sweden's lights follow a different curve, peaking in the {{timeline.swe_peak_dec|raw}}s with {{timeline.swe_peak_n|int}}; from 1930 to 1969 Sweden supplies {{timeline.swe_share_1930_1969|pc}} of all dated new lights. The Swedish lights of 1930 to 1969 are small (median recorded height {{timeline.swe_3069_h_median|f1}} for {{timeline.swe_3069_h_n|int}} with a height, against {{timeline.nosw_5009_h_median|f1}} for {{timeline.nosw_5009_h_n|int}} lights built elsewhere in 1850 to 1909; most heights are in metres) and {{timeline.swe_3069_sl0_pct|pc}} have no Wikipedia article. With all countries together, the busiest decade is the {{timeline.peak_dec|raw}}s ({{timeline.peak_n|int}}).
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_timeline.png}
+\caption{Lighthouses built per decade, by the earliest Wikidata inception year, by country.}\label{fig:timeline}\end{figure}
+
+\subsection{The oldest}
+Table~\ref{tab:oldest} lists the oldest dated lights. The two oldest dates belong to lost towers, the Lighthouse of Alexandria ({{spot.Lighthouse of Alexandria.year|yr}}) and the Tower of Caepio. The oldest still standing is the Tower of Hercules at A Coruña ({{spot.Tower of Hercules.year|yr}}), followed by the Roman Dubris Pharos at Dover ({{spot.Dubris Pharos.year|yr}}) and medieval towers such as Hook Head (dated {{spot.Hook Lighthouse.year|yr}} in Wikidata, apparently rounded to a century). Several old dates belong to sites rather than towers: the Planier light is dated 1326 in Wikidata but its present tower is from 1959 according to the Wikipedia list.
+
+{{TABLE_OLDEST}}
+
+\subsection{The tallest}
+The {{tallest.n|int}} towers in the Wikipedia list (Figure~\ref{fig:tallest}) range from 60~m to the {{tallest.top.m|int}}~m of the Île Vierge lighthouse ({{tallest.top.year|raw}}). {{tallest.stone_or_brick|int}} are stone, granite or brick, and {{tallest.n_before1900|int}} were built before 1900. I matched {{tallest.matched|int}} of them to Wikidata items in the same country: {{tallest.wd_unit.metres|int}} have a Wikidata height within 3~m of the list's metres, {{tallest.wd_unit.feet|int}} (Cape Hatteras, 210) matches the height in feet, {{tallest.wd_unit.other|int}} differs and {{tallest.wd_unit.none|int}} have none. Wikidata gives a height for {{n.with_height|int}} lights in all; without units these cannot be ranked safely.
+
+\begin{figure}[tbp]\centering\includegraphics[width=.92\textwidth]{f_tallest.png}
+\caption{The tallest traditional lighthouses, from Wikipedia's List of tallest lighthouses.}\label{fig:tallest}\end{figure}
+
+\subsection{Coverage}
+{{n.sl_le1|int}} lights ({{n.sl_le1_pct|pc}}) have at most one Wikipedia article and {{n.sl0|int}} ({{n.sl0_pct|pc}}) have none. The share varies from {{coverage.least_bare.0.sl_le1_pct|f1}}\% in Estonia and {{country.by_iso.USA.sl_le1_pct|f1}}\% in the United States to over 90\% in Sweden, Finland and Madagascar (Figure~\ref{fig:coverage}); {{coverage.swe_no_label|int}} Swedish and {{coverage.fin_no_label|int}} Finnish lights lack an English label, and only {{coverage.fin_dated_pct|pc}} of Finnish lights are dated, against {{coverage.swe_dated_pct|pc}} of Swedish ones. Coastal countries with no lighthouse in Wikidata include Greenland, Nigeria, Kenya, Ecuador and the United Arab Emirates. Europe holds {{coverage.by_continent.0.pct|pc}} of all lights, Africa {{coverage.by_continent.3.pct|pc}} and South America {{coverage.by_continent.4.pct|pc}}.
+
+\begin{figure}[tbp]\centering\includegraphics[width=.92\textwidth]{f_coverage.png}
+\caption{Share of each country's lighthouses with at most one Wikipedia article (countries with at least 40).}\label{fig:coverage}\end{figure}
+
+\section{Discussion}
+The map in Figure~\ref{fig:glow} is two maps laid over each other. One is a map of maritime need: the North Atlantic, the Baltic, the Mediterranean, the coasts of Japan and China and the eastern seaboard of the United States carried the densest shipping of the industrial age and were lit accordingly. The other is a map of the record. Sweden's lights stand out because a national list has been loaded nearly light by light, bare items without articles, often without English names, many of them small twentieth-century lights; Finland and Tunisia show the same signature. Where volunteers add lighthouses one article at a time, as in the United States, Spain or Estonia, records are rich but may stop at the famous towers. Where neither has happened, a coast may appear dark although it is lit.
+
+The timeline is more robust outside Sweden, and its shape, a nineteenth-century rise, a plateau to the First World War and a long decline, fits the history of lighthouse building as it is usually told: the great lighthouse programmes of the Victorian era, the spread of unmanned automatic lights in the twentieth century, the withdrawal of keepers (in the United Kingdom completed in 1998) and the arrival of satellite navigation. It is, though, a timeline of lights that Wikidata knows and dates, by the year it gives, which for old sites is often the first light rather than the present tower.
+
+\section{Limitations}
+First, Wikidata is not a register: coverage depends on imports and volunteers and varies by an order of magnitude between countries. Second, inception dates may be the first light, a rebuilding or a rounded century, and items for successive towers on one site sometimes coexist. Third, heights lack units in the extract and are not used for ranking. Fourth, coast lengths are scale dependent and the 1:10m outlines omit many small islands; per-coast densities are comparisons, not absolute measures. Fifth, the sea and inland split uses a simple distance rule, so some estuary and river-mouth lights count as sea lights. Sixth, ``still standing'' was checked by hand for {{n.oldest_checked|int}} lights only. Finally, the Wikipedia list follows one directory's definition of a traditional lighthouse and leaves out towers such as Jeddah's.
+
+\section{Conclusion}
+Put every lighthouse in Wikidata on one map and the coasts of the industrial world light up, with the nineteenth century as the great age of building. Measured against the length of the coast, Scandinavia's lights are the densest, but the brightness of a coast in open data says as much about who has recorded its lights as about the sea. A fuller open register, especially for Africa, South and Southeast Asia and the Pacific, would change the map more than any analysis could.
+
+\section*{Data and code availability}
+The interactive map is at \url{{{meta.page}}}. Data and code are at \url{{{meta.repo}}} and archived with this paper at @@DOILINK@@. Derived data are released under CC BY 4.0, except the table derived from Wikipedia (CC BY-SA 4.0); code under the MIT licence. Wikidata is CC0; Natural Earth is public domain.
+
+\section*{AI statement}
+I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.
+
+\begin{thebibliography}{9}
+\bibitem[Mandelbrot(1967)]{mandelbrot} Mandelbrot, B. (1967) How long is the coast of Britain? Statistical self-similarity and fractional dimension. \emph{Science} 156(3775), 636 to 638.
+\bibitem[Natural Earth(2026)]{naturalearth} Natural Earth (2026) Admin 0 countries, admin 1 states and provinces, and populated places, 1:10m and 1:50m. Public domain. \url{https://www.naturalearthdata.com/}
+\bibitem[Rowlett(2026)]{rowlett} Rowlett, R. (2026) The Lighthouse Directory. University of North Carolina at Chapel Hill. \url{https://www.ibiblio.org/lighthouse/}
+\bibitem[Wikidata(2026)]{wikidata} Wikidata (2026) Wikidata, the free knowledge base. CC0. \url{https://www.wikidata.org/}, queried with QLever, \url{https://qlever.cs.uni-freiburg.de/}
+\bibitem[Wikipedia(2026)]{wikitall} Wikipedia contributors (2026) List of tallest lighthouses. CC BY-SA 4.0. \url{https://en.wikipedia.org/wiki/List_of_tallest_lighthouses}
+\end{thebibliography}
+\end{document}

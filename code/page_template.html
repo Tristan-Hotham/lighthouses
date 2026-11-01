@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lighthouses of the World</title>
+<meta name="description" content="Every lighthouse in Wikidata, {{n.items|int}} of them, on one map that glows like a coastline at night: where they are, when they were built, the oldest still standing and the tallest, with an honest look at what the record misses.">
+<meta property="og:title" content="Lighthouses of the world: every light on one glowing map">
+<meta property="og:description" content="{{n.items|int}} lighthouses mapped from Wikidata. Outside Sweden, building peaked in the {{timeline.peak_dec_nosw|raw}}s; the oldest still standing is the Tower of Hercules, dated {{spot.Tower of Hercules.year|yr}}.">
+<meta property="og:image" content="https://maps.tristanhotham.com/lighthouses/header.png">
+<meta property="og:url" content="https://maps.tristanhotham.com/lighthouses/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Light list: pale paper, deep night navy, lamp amber, signal red. */
+:root{
+  --bg:#F6F4EF; --panel:#EAE7DF; --fg:#1B2230; --muted:#626A74; --rule:#DDD8CC; --card:#FFFEFA; --border:#CBC5B8;
+  --hot:#B3202A; --lamp:#D98E04; --ink:#14213D; --cool:#2F6FB0; --land:#E6E2D8; --sea:#E3EAEE;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F141C; --panel:#1A212C; --fg:#ECEEF1; --muted:#A2A8B0; --rule:#2C3440; --card:#151B24; --border:#434B57;
+  --hot:#FF6B6B; --lamp:#FFC24A; --ink:#AFC4E8; --cool:#7DB2E6; --land:#202631; --sea:#0D1520; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141C; --panel:#1A212C; --fg:#ECEEF1; --muted:#A2A8B0; --rule:#2C3440; --card:#151B24; --border:#434B57;
+  --hot:#FF6B6B; --lamp:#FFC24A; --ink:#AFC4E8; --cool:#7DB2E6; --land:#202631; --sea:#0D1520; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 18px/1.62 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden;overflow-x:clip}
+html{overflow-x:clip}
+.wrap{max-width:700px;margin:0 auto;padding-block:28px 64px}
+.wrap .bleed{width:min(1180px,calc(100vw - 32px));margin-left:calc((100% - min(1180px,100vw - 32px))/2);margin-right:0}
+a{color:inherit;text-decoration-color:var(--lamp);text-underline-offset:3px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kicker b{background:var(--ink);color:var(--bg);padding:5px 8px;font-weight:500}
+header.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:end;border-bottom:6px double var(--fg);padding-bottom:22px;margin-top:18px}
+h1{font:900 clamp(44px,11vw,94px)/.9 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 .a{color:var(--lamp)} h1 .b{color:var(--hot)}
+.mark{width:clamp(78px,16vw,128px);height:auto;display:block;color:var(--fg)}
+.dek{grid-column:1/-1;font-size:21px;line-height:1.42;margin:8px 0 0;max-width:56ch}
+.byline{font:400 13px/1.4 var(--mono);color:var(--muted);margin-top:14px}
+h2{font:800 34px/1.04 var(--display);letter-spacing:-.01em;margin:54px 0 10px;text-wrap:balance}
+h2 .n{font:500 13px/1 var(--mono);color:var(--hot);display:block;letter-spacing:.1em;margin-bottom:10px}
+h3{font:600 20px/1.25 var(--display);margin:28px 0 6px}
+p{margin:0 0 16px}
+.lede::first-letter{font:900 72px/.8 var(--display);float:left;margin:6px 10px 0 0;color:var(--lamp)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+.stats div{background:var(--card);padding:14px 12px}
+.stats b{display:block;font:900 clamp(22px,4.4vw,32px)/1 var(--display);letter-spacing:-.01em}
+.stats b.h{color:var(--hot)} .stats b.c{color:var(--cool)} .stats b.g{color:var(--lamp)} .stats b.p{color:var(--ink)}
+.stats span{font:400 12px/1.35 var(--mono);color:var(--muted);display:block;margin-top:6px}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.figure{margin:26px 0 30px}
+.fig-h{font:600 19px/1.25 var(--display);margin:0 0 4px}
+.fig-sub{font:400 13px/1.45 var(--mono);color:var(--muted);margin:0 0 12px}
+.src{font:400 12px/1.45 var(--mono);color:var(--muted);margin-top:10px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);fill:var(--fg)}
+.lab{font-size:12px}.lab.m{fill:var(--muted)}.lab.b{font-weight:500}.lab.s{font-size:11px}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font:400 12px/1.45 var(--mono);padding:8px 10px;border-radius:3px;max-width:290px;z-index:1000;transform:translate(-50%,calc(-100% - 12px));display:none}
+.tip b{font-weight:500}
+.controls{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.scrollrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:2px;max-width:100%}
+.scrollrow .btn{flex:0 0 auto;white-space:nowrap}
+.ctl-l{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:2px;flex:0 0 auto;align-self:center}
+.btn{font:500 12px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.2)}
+.btn:focus-visible,input:focus-visible,summary:focus-visible,select:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
+.btn.night{background:#0B1420;color:#FFD27A;border-color:#0B1420}
+.btn.night[aria-pressed="true"]{box-shadow:0 0 0 2px var(--lamp) inset}
+.btn.day{background:#FFFDF6;color:#1B2230;border-color:var(--border)}
+.btn.day[aria-pressed="true"]{box-shadow:0 0 0 2px var(--lamp) inset}
+.searchbox{position:relative;flex:1 1 260px;min-width:0}
+input[type=search]{font:400 15px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:10px 11px;min-height:40px;width:100%}
+.suggest{position:absolute;left:0;right:0;top:100%;margin:2px 0 0;padding:0;list-style:none;background:var(--card);border:1px solid var(--border);z-index:1001;font:400 13px/1.3 var(--mono);display:none;max-height:340px;overflow:auto}
+.suggest li{padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--rule)}
+.suggest li span{color:var(--muted)}
+.suggest li[aria-selected="true"],.suggest li:hover{background:var(--panel)}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+@media (max-width:900px){.mapgrid{grid-template-columns:1fr}}
+.side{background:var(--card);border:1px solid var(--border);padding:12px 12px 10px;font:400 13px/1.45 var(--mono);max-height:680px;overflow:auto}
+@media (max-width:900px){.side{max-height:none}}
+.side h4{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.side h4:first-child{margin-top:2px}
+.side .big{font:800 26px/1.1 var(--display);margin:2px 0 4px}
+.side .sub{color:var(--muted);font-size:12px;margin:0 0 8px}
+.side ol,.side ul{margin:4px 0 8px;padding-left:20px}
+.side li{margin:3px 0}
+.side li small,.side td small{color:var(--muted)}
+.side table{width:100%;border-collapse:collapse;margin:4px 0 6px}
+.side td{padding:4px 4px 4px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.side td.num{text-align:right;white-space:nowrap}
+.back{font:400 12px var(--mono);background:none;border:0;color:var(--muted);padding:0;cursor:pointer;text-decoration:underline;margin-bottom:6px}
+.go{cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px}
+.lmap{height:660px;border:1px solid var(--border);background:var(--sea);border-radius:2px}
+.lmap.nightmap{background:#07101B}
+@media (max-width:600px){.lmap{height:min(64vh,480px)}}
+.leaflet-container{font:400 12px/1.4 var(--mono);background:var(--sea)}
+.leaflet-container.nightmap{background:#07101B}
+.dotcanvas{position:absolute;left:0;top:0;pointer-events:none}
+.lyrBtn{background:var(--card,var(--bg));color:var(--fg);border:1px solid var(--border);border-radius:3px;font:600 12px/1 var(--mono);padding:8px 10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lyrBtn[aria-expanded="true"]{background:var(--fg);color:var(--bg)}
+.lyrPanel{background:var(--card,var(--bg));color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:10px 12px 8px;margin-top:6px;width:252px;box-shadow:0 2px 10px rgba(0,0,0,.15);font:400 12px/1.3 var(--mono);max-height:min(70vh,560px);overflow:auto}
+.lyrPanel[hidden]{display:none}
+.lyrPanel .row{margin:0 0 9px}
+.lyrPanel label{display:flex;gap:6px;align-items:center;cursor:pointer;font-weight:600}
+.lyrPanel input[type=range]{width:100%;accent-color:var(--lamp)}
+.lyrPanel select{font:400 12px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--border);border-radius:2px;padding:2px 4px;width:100%;min-height:0}
+.lyrPanel .sub{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:11px;margin-top:3px}
+.lyrPanel .sub span{flex:0 0 58px}
+.lyrPanel .hd{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 7px;border-top:1px solid var(--rule);padding-top:9px}
+.lyrPanel .reset{font:400 11px var(--mono);color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+.cityL{font:500 11px/1 var(--mono);color:var(--fg);white-space:nowrap;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 2px var(--bg);pointer-events:none}
+.cityL i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--fg);margin-right:4px;vertical-align:1px}
+.cityL.s{font-size:10px;font-weight:400}
+.nightmap .cityL{color:#C9D3E0;text-shadow:0 0 3px #07101B,0 0 3px #07101B}
+.nightmap .cityL i{background:#C9D3E0}
+.cntL{font:700 11px/1 var(--mono);color:var(--fg);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;opacity:.75;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg);pointer-events:none;text-align:center}
+.nightmap .cntL{color:#8FA0B5;text-shadow:0 0 3px #07101B}
+.starL{font:600 11px/1.2 var(--mono);color:var(--fg);white-space:nowrap;text-shadow:0 0 3px var(--bg),0 0 3px var(--bg),0 0 3px var(--bg);pointer-events:none}
+.nightmap .starL{color:#FFE2A6;text-shadow:0 0 3px #07101B,0 0 3px #07101B,0 0 3px #07101B}
+.mapnote{background:color-mix(in srgb,var(--card) 92%,transparent);border:1px solid var(--border);border-radius:3px;padding:6px 9px;font:400 12px/1.35 var(--mono);max-width:min(300px,62vw);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.mapnote:empty{display:none}
+.leaflet-bar a,.leaflet-bar a:hover{background:var(--card);color:var(--fg);border-bottom-color:var(--border)}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--card) 85%,transparent)!important;color:var(--muted)}
+.leaflet-control-attribution a{color:var(--fg)}
+@media (max-width:600px){.leaflet-control-attribution{font-size:9px;line-height:1.25;max-width:58vw}}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--card);color:var(--fg)}
+.leaflet-popup-content{font:400 12.5px/1.45 var(--mono);margin:10px 12px}
+.leaflet-popup-content b{font:700 15px/1.2 var(--display)}
+.leaflet-popup-content .pm{color:var(--muted);font-size:11.5px}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font:400 12px/1.3 var(--mono);color:var(--muted);margin-top:8px;align-items:center}
+.legend span{display:inline-flex;align-items:center}
+.legend i{display:inline-block;width:13px;height:13px;margin-right:6px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+.legend i.sq{border-radius:2px}
+.pull{font:600 26px/1.25 var(--display);border-left:6px solid var(--lamp);padding:4px 0 4px 18px;margin:30px 0}
+.note{background:var(--panel);border:1px solid var(--rule);padding:14px 16px;font-size:16px;margin:22px 0}
+.note h3{margin-top:0}
+table.tbl{width:100%;border-collapse:collapse;font:400 13px/1.4 var(--mono)}
+table.tbl th{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 6px 6px 0;border-bottom:2px solid var(--fg)}
+table.tbl td{padding:6px 6px 6px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.tbl td.r,table.tbl th.r{text-align:right;white-space:nowrap}
+table.tbl tr[data-q]{cursor:pointer}
+table.tbl tr[data-q]:hover td{background:var(--panel)}
+.tag{display:inline-block;font:500 10.5px/1 var(--mono);padding:3px 5px;border-radius:2px;border:1px solid var(--border);white-space:nowrap}
+.tag.Standing{background:#1E9E8E;color:#fff;border-color:#1E9E8E}.tag.Lost{background:var(--hot);color:#fff;border-color:var(--hot)}.tag.Rebuilt{background:var(--lamp);color:#1B2230;border-color:var(--lamp)}
+.tablebox{max-height:470px;overflow:auto;border:1px solid var(--border);background:var(--card);padding:0 10px}
+details{margin:14px 0}
+summary{font:500 13px/1.4 var(--mono);cursor:pointer;color:var(--fg);padding:8px 0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.cta a{font:500 13px/1 var(--mono);text-decoration:none;border:1px solid var(--fg);padding:11px 14px;border-radius:3px}
+.cta a.p{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+footer{border-top:6px double var(--fg);margin-top:56px;padding-top:16px;font:400 13px/1.55 var(--mono);color:var(--muted)}
+footer p{margin:0 0 10px}
+.theme{position:fixed;right:12px;bottom:12px;z-index:1002}
+@media print{.theme,.controls{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker"><b>Data study</b><span>Lighthouses</span><span>World, AD 100 to today</span></div>
+<header class="hero">
+  <h1>Lighthouses <span class="a">of the</span> <span class="b">world</span></h1>
+  <svg class="mark" viewBox="0 0 120 120" aria-hidden="true"><g id="heroMark"></g></svg>
+  <p class="dek">Wikidata knows of {{n.items|int}} lighthouses. Put every one on a map and light it, and the world's coasts draw themselves: thick and bright around Scandinavia, Britain and New England, thin and dark along much of Africa and Asia. Some of that is the sea, and some of it is who wrote the lights down.</p>
+</header>
+<div class="byline">Dr Tristan Hotham · Independent researcher · 2026 · Data: Wikidata; Wikipedia contributors (List of tallest lighthouses); Natural Earth</div>
+
+<div class="stats">
+  <div><b class="p">{{n.items|int}}</b><span>lighthouses with a place in Wikidata, in {{n.countries|int}} countries and territories</span></div>
+  <div><b class="g">{{spot.Tower of Hercules.year|yr}}</b><span>the Tower of Hercules in Spain, the oldest dated lighthouse still standing and still lit</span></div>
+  <div><b class="h">{{timeline.peak_dec_nosw|raw}}s</b><span>the busiest decade for new lights outside Sweden, {{timeline.peak_n_nosw|int}} of them</span></div>
+  <div><b class="c">{{country.dense.0.per1000|int}}</b><span>lights per 1,000 km of coast in Sweden, against {{country.world_per1000|f1}} for the world</span></div>
+</div>
+
+<p class="lede">Lighthouses are the most hopeful buildings we have: a tower put up on the worst rock on the coast so that nobody else has to die there. The Romans built them, the Victorians built them by the thousand, and now, with satellite navigation in every wheelhouse, we mostly keep them for love. Wikidata, the free database behind Wikipedia, records {{n.items|int}} of them with a position, and {{n.dated|int}} with a year they were built or first lit.</p>
+<p>This page puts them all on one map, counts them by country and by the length of each country's coast, follows the building boom decade by decade, and lists the oldest and the tallest. It is also a study of a record. Sweden alone has {{country.top.0.n|int}} of the lighthouses, {{country.swe_pct|pc}} of the world's total, because a national list of Swedish lights has made its way into Wikidata almost light by light. Other countries with long, dangerous coasts barely appear. I will try to keep the two stories apart.</p>
+
+<h2><span class="n">01 · The map</span>Every light on the coast</h2>
+<p>Switch the map to night and each lighthouse becomes a small lamp. Where they crowd, the coast glows: the Swedish and Finnish skerries, the Danish straits, the Channel, the Atlantic coast of the United States and the Great Lakes. Click any light for its record. You can colour the lights by when they were built, search for a light or a country, and turn the base map, hill shading and names on and off under Map layers.</p>
+<div class="bleed" id="atlas">
+<div class="controls">
+  <div class="scrollrow" id="modeRow"><span class="ctl-l">View</span><button class="btn day" data-m="day" aria-pressed="true">☀ Day map</button><button class="btn night" data-m="night" aria-pressed="false">☾ Night glow</button></div>
+  <div class="scrollrow" id="colRow"><span class="ctl-l">Colour</span><button class="btn" data-c="lamp" aria-pressed="true">Lamp</button><button class="btn" data-c="era" aria-pressed="false">When built</button></div>
+</div>
+<div class="controls"><div class="scrollrow" id="eraRow"><span class="ctl-l">Built</span></div></div>
+<div class="controls">
+  <div class="searchbox"><input type="search" id="q" placeholder="Search a lighthouse or a country" aria-label="Search a lighthouse or a country" autocomplete="off"><ul class="suggest" id="sug" role="listbox"></ul></div>
+</div>
+<div class="controls"><div class="scrollrow" id="focusRow"><span class="ctl-l">Zoom to</span></div></div>
+<div class="mapgrid">
+  <div><div id="map" class="lmap" role="application" aria-label="Map of the world's lighthouses"></div>
+    <div class="legend" id="legend"></div></div>
+  <div class="side" id="side" aria-live="polite"></div>
+</div>
+<p class="src">Lights: {{n.items|int}} Wikidata items that are lighthouses (or a kind of lighthouse) and have coordinates, after removing {{n.dropped|int}} keepers' houses, barrack blocks and modern replicas. "When built" is the earliest inception date in Wikidata, which for some lights is the first light on the site rather than the present tower; {{n.undated|int}} lights have no date. Lights more than {{meta.sea_km|int}} km inland from the sea coast are marked as lake and river lights. Heights in Wikidata were extracted without their units; see the notes in each record. Sources: Wikidata (CC0); Wikipedia contributors, List of tallest lighthouses (CC BY-SA 4.0); Natural Earth. Base map tiles © Esri.</p>
+</div>
+
+<h2><span class="n">02 · When</span>The lighthouse century, and after</h2>
+<p>Lighthouses are ancient, but most of the ones on the map are Victorian or younger. Of the {{n.dated|int}} dated lights, only {{n.before1800|int}} were built before 1800. Then the industrial century arrives: iron, steam, cheap glass and the Fresnel lens, and maritime trade that needed every headland lit. Outside Sweden, new lights went from {{timeline.nosw_1820s|int}} in the 1820s to {{timeline.nosw_1870s|int}} in the {{timeline.peak_dec_nosw|raw}}s, and stayed above three hundred a decade until the First World War. The United States built most in the {{timeline.usa_peak_dec|raw}}s ({{timeline.usa_peak_n|int}}).</p>
+<div class="figure"><p class="fig-h">Lighthouses built per decade, 1700 to today</p><p class="fig-sub">{{n.dated|int}} dated Wikidata lighthouses by the earliest inception year, by country. The 2020s are only part way through. Hover a bar.</p>
+<div class="controls"><div class="scrollrow" id="tlRow"><span class="ctl-l">Show</span><button class="btn" data-t="all" aria-pressed="true">All countries</button><button class="btn" data-t="nosw" aria-pressed="false">Without Sweden</button></div></div>
+<div class="chart" id="tlChart"></div><div class="legend" id="tlLegend"></div></div>
+<p>After 1910 the curve outside Sweden falls away: about {{timeline.nosw_1850_1909_avg|int}} new lights a decade from 1850 to 1909, about {{timeline.nosw_1970_2019_avg|int}} a decade from 1970 to 2019, a fall of {{timeline.nosw_drop_x|f1}} times. The good sites were taken, and the job of the lighthouse was changing. Lights were automated through the twentieth century, keepers left (in Britain the last of them came off duty in 1998), and satellite navigation, fully working from the mid 1990s, took over much of the work of finding a ship's position. New lights now tend to be small, unmanned beacons, and Wikidata rarely bothers with those.</p>
+<p>Sweden tells a different story, or rather its record does. Sweden's {{country.top.0.n|int}} lights are nearly all dated, and they peak in the {{timeline.swe_peak_dec|raw}}s, with {{timeline.swe_peak_n|int}}. From 1930 to 1969 Sweden supplies {{timeline.swe_share_1930_1969|pc}} of all dated new lights in Wikidata. Their recorded heights are small (a median of {{timeline.swe_3069_h_median|f1}}, against {{timeline.nosw_5009_h_median|f1}} for lights built elsewhere from 1850 to 1909, most of them in metres) and {{timeline.swe_3069_sl0_pct|pc}} have no Wikipedia article at all. These look like the small automatic lights that lit the Swedish archipelagos in the twentieth century, recorded because someone loaded a full national list. Elsewhere the same kind of light is simply missing.</p>
+
+<h2><span class="n">03 · Where</span>Counting lights, and counting coast</h2>
+<p>By raw count, the top five are Sweden ({{country.top.0.n|int}}), the United States ({{country.by_iso.USA.n|int}}), Finland ({{country.by_iso.FIN.n|int}}), Canada ({{country.by_iso.CAN.n|int}}) and the United Kingdom ({{country.by_iso.GBR.n|int}}). But a country with more coast needs more lights, so I also divide each country's sea lights by the length of its coast, measured on Natural Earth's 1:10m map: the outline of the country, minus every border it shares with a neighbour. The world has about {{country.world_coast_km|int}} km of coast at that scale and {{country.world_per1000|f1}} lights in Wikidata per 1,000 km of it.</p>
+<div class="figure"><p class="fig-h">Lighthouses by country</p><p class="fig-sub">Top 20. Per 1,000 km: sea lights only, for {{country.dense_rule|raw}} ({{country.dense_n|int}}). Hover a bar.</p>
+<div class="controls"><div class="scrollrow" id="ctRow"><span class="ctl-l">Measure</span><button class="btn" data-k="n" aria-pressed="true">Number</button><button class="btn" data-k="per1000" aria-pressed="false">Per 1,000 km of coast</button></div></div>
+<div class="chart" id="ctChart"></div></div>
+<p>Per kilometre of coast, Sweden ({{country.dense.0.per1000|int}} per 1,000 km) and Finland ({{country.dense.1.per1000|int}}) are far ahead, then Tunisia ({{country.dense.2.per1000|int}}), whose {{country.by_iso.TUN.n|int}} lights also look like a single import, and Germany ({{country.dense.3.per1000|int}}). France ({{country.by_iso.FRA.per1000|int}}), Spain ({{country.by_iso.ESP.per1000|int}}) and the United Kingdom ({{country.by_iso.GBR.per1000|int}}) sit together a little lower. At the bottom are countries with vast, island-strewn coasts: Canada has {{country.by_iso.CAN.per1000|f1}} per 1,000 km, Russia {{country.by_iso.RUS.per1000|f1}} and Indonesia {{country.by_iso.IDN.per1000|f1}}. Indonesia certainly has more than {{country.by_iso.IDN.n|int}} lighthouses; Wikidata does not.</p>
+<h3>The densest coasts</h3>
+<p>The same sum for states, provinces and counties picks out the most crowded stretches of coast. All of the top ten are in Sweden and Finland, led by Västra Götaland on the Skagerrak, with {{regions.top.0.per100|f1}} lights per 100 km of coast. Outside Sweden and Finland, the densest are {{regions.top_outside_nordic.0.name|raw}} ({{regions.top_outside_nordic.0.per100|f1}}), on the shallow, shifting Wadden Sea, and {{regions.top_outside_nordic.1.name|raw}} ({{regions.top_outside_nordic.1.per100|f1}}), where Long Island Sound is lit like a street.</p>
+<div class="figure"><p class="fig-h">Lights per 100 km of coast</p><p class="fig-sub">The top 20 {{regions.rule|raw}}. Click a row to see it on the map.</p><div class="tablebox"><table class="tbl" id="regTable"></table></div></div>
+
+<h2><span class="n">04 · Oldest</span>Two thousand years of keeping a light</h2>
+<p>The oldest date in Wikidata belongs to a lighthouse that is long gone: the Pharos of Alexandria, one of the Seven Wonders, dated {{spot.Lighthouse of Alexandria.year|yr}} and brought down by earthquakes in the Middle Ages. The oldest that still stands, and still shines, is the Tower of Hercules at A Coruña in Galicia, a Roman tower dated {{spot.Tower of Hercules.year|yr}}. The Romans also left the Dubris Pharos inside Dover Castle (dated {{spot.Dubris Pharos.year|yr}}), still standing though long dark. Then come the medieval towers: Hook Head in Ireland ({{spot.Hook Lighthouse.year|yr}} in Wikidata, a date that looks rounded to a century), Kõpu in Estonia ({{spot.Kõpu Lighthouse.year|yr}}), the Lanterna of Genoa (rebuilt {{spot.Lighthouse of Genoa.year|yr}}) and Cordouan in the Gironde ({{spot.Cordouan Lighthouse.year|yr}}).</p>
+<div class="figure"><p class="fig-h">The oldest dated lighthouses in Wikidata</p><p class="fig-sub">Years are Wikidata's inception dates. Whether a tower still stands is not in Wikidata's record: I marked the best known by hand, and say "not checked" where I could not be sure. Click a row to see it on the map.</p><div class="tablebox"><table class="tbl" id="oldTable"></table></div></div>
+<p>Treat the old dates with care. Wikidata usually gives the year a light was first shown on the site, and old towers were often rebuilt on the same spot: the Genoese Lighthouse at Constanța is dated to the Genoese era but the tower is from 1860, and the Planier light off Marseille is dated 1326 though the present tower went up in 1959. Many early dates are rounded to a century.</p>
+
+<h2><span class="n">05 · Tallest</span>The tallest towers</h2>
+<p>For height I use Wikipedia's list of tallest lighthouses, which gives {{tallest.n|int}} traditional towers of 60 m or more, measured from the ground. The tallest is the Île Vierge lighthouse off Finistère, {{tallest.top.m|int}} m of granite, finished in {{tallest.top.year|raw}}. {{tallest.stone_or_brick|int}} of the {{tallest.n|int}} are stone, granite or brick, and {{tallest.n_before1900|int}} are from the nineteenth century or earlier.</p>
+<div class="figure"><p class="fig-h">The tallest lighthouses</p><p class="fig-sub">Tower height in metres, from Wikipedia's List of tallest lighthouses. Hover a bar; click to see it on the map.</p><div class="chart" id="tallChart"></div></div>
+<div class="note"><h3>Why not use Wikidata's heights?</h3><p>Wikidata has a height for {{n.with_height|int}} lighthouses, but the extract I worked from kept the numbers and lost their units. Of the {{tallest.matched|int}} towers in the Wikipedia list that I could match, {{tallest.wd_unit.metres|int}} have a Wikidata height in metres and {{tallest.wd_unit.feet|int}} (Cape Hatteras, 210) in feet. So on the map each record shows the Wikidata number with a warning, and the ranking uses the Wikipedia list only.</p></div>
+
+<h2><span class="n">06 · What is missing</span>A map of the record as much as of the sea</h2>
+<p>Wikidata's coverage of lighthouses is very uneven. Some countries' lights arrived in bulk from a national list, many of them without an English name or a Wikipedia article: {{country.by_iso.SWE.sl_le1_pct|pc}} of Sweden's lights have at most one Wikipedia article, as do {{country.by_iso.FIN.sl_le1_pct|pc}} of Finland's and {{country.by_iso.TUN.sl_le1_pct|pc}} of Tunisia's, and {{coverage.swe_no_label|int}} Swedish lights have no English label at all. Other countries are covered light by light, article by article, by volunteers: in the United States only {{country.by_iso.USA.sl_le1_pct|pc}} of lights lack a second article. And some coastal countries have no lighthouse in Wikidata at all, among them Greenland, Nigeria, Kenya, Ecuador and the United Arab Emirates.</p>
+<div class="figure"><p class="fig-h">How bare are the records?</p><p class="fig-sub">Share of each country's lighthouses with at most one Wikipedia article, for countries with at least 40. High shares suggest a bulk import. Hover a bar.</p><div class="chart" id="covChart"></div></div>
+<p>So read the map twice. Its bright coasts are where the sea is busy and dangerous, and where lighthouse lists have found their way into open data. Europe holds {{coverage.by_continent.0.pct|pc}} of the lights; Africa {{coverage.by_continent.3.pct|pc}}, South America {{coverage.by_continent.4.pct|pc}}. The dark coasts are not empty of lights. They are empty of records.</p>
+<p class="pull">A lighthouse map is a map of danger, of trade and of whoever wrote the lights down.</p>
+
+<h2><span class="n">07 · How I did this</span>Methods and caveats</h2>
+<p><b>Lighthouses.</b> Every Wikidata item that is an instance of lighthouse or one of its subclasses and has coordinates, through the QLever service: {{n.rows|int}} rows, one item per row and value, giving {{n.items_raw|int}} items. I removed {{n.dropped|int}} keepers' houses, barrack blocks and replicas and {{n.nocoord|int}} item whose position is recorded as unknown, leaving {{n.items|int}}. Where an item has several inception dates ({{n.multi_year|int}}) I use the earliest. Labels are English; {{n.no_label|int}} lights ({{n.no_label_pct|pc}}) have none and are shown by their Wikidata number.</p>
+<p><b>Countries and coasts.</b> Each light is placed in the Natural Earth 1:10m country it stands in, or the nearest within {{meta.near_km|int}} km for lights on rocks offshore; {{n.how.wikidata|int}} lights further out take Wikidata's country. Natural Earth's map units are used as they are, so Greenland, Puerto Rico and the Faroes count on their own (I merged Åland into Finland). A light more than {{meta.sea_km|int}} km inland from the sea coast is a lake or river light ({{n.inland|int}}, mostly on the Great Lakes and the Swedish and Finnish lakes) and is left out of the per-coast figures. Coast length is the part of each 1:10m country or region outline not shared with a neighbour, measured on the ellipsoid. Coastlines are fractal: at this scale fjords and skerries are smoothed, so the lengths compare countries fairly but are not the "true" length of any coast.</p>
+<p><b>Oldest.</b> Dates are Wikidata's inception years, unchanged. Wikidata does not say in this extract whether a tower still stands; I marked the {{n.oldest_checked|int}} best known of the oldest lights by hand from their published histories and the Wikipedia list. <b>Tallest.</b> Heights and years from Wikipedia's List of tallest lighthouses (revision {{tallest.revid|raw}}), which follows the Lighthouse Directory's definition of a traditional lighthouse.</p>
+<details><summary>Sources and licences</summary>
+<ul>
+<li>Wikidata (https://www.wikidata.org/), CC0, queried through QLever (https://qlever.cs.uni-freiburg.de/); retrieved {{meta.retrieved|raw}}.</li>
+<li>Wikipedia contributors, "List of tallest lighthouses" (https://en.wikipedia.org/wiki/List_of_tallest_lighthouses), CC BY-SA 4.0. The table derived from it (data/tallest_wikipedia.csv) is shared under CC BY-SA 4.0.</li>
+<li>Natural Earth 1:10m and 1:50m countries, 1:10m states and provinces and populated places (public domain).</li>
+<li>Base map tiles © Esri and its partners.</li>
+</ul></details>
+
+<div class="cta"><a class="p" href="https://doi.org/10.5281/zenodo.23857614">Read the paper</a><a href="https://github.com/Tristan-Hotham/lighthouses">Data and code</a><a href="https://blog.tristanhotham.com/2026/10/31/lighthouses/">Blog post</a></div>
+
+<footer>
+<p>Dr Tristan Hotham, Independent researcher. ORCID <a href="https://orcid.org/0000-0003-4931-9349">0000-0003-4931-9349</a>.</p>
+<p>Cite as: Hotham, T. (2026) Lighthouses of the world: where they stand, when they were built, the oldest and the tallest, from Wikidata. Zenodo. <a href="https://doi.org/10.5281/zenodo.23857614">https://doi.org/10.5281/zenodo.23857614</a></p>
+<p>Data: Wikidata (CC0), Wikipedia contributors (CC BY-SA 4.0), Natural Earth (public domain). Licence: text and figures CC BY 4.0, the derived Wikipedia table CC BY-SA 4.0, other derived data CC BY 4.0, code MIT.</p>
+<p>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</p>
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<button class="btn theme" id="theme" aria-label="Toggle dark mode">◐</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const R = /*RESULTS*/;
+const SITE = /*SITE*/;
+const WORLD = /*WORLD*/;
+const CITIES = /*CITIES*/;
+const fmt = n => n == null || n === "" ? "n/a" : Math.round(n).toLocaleString("en-GB");
+const f1 = n => n == null ? "n/a" : n.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const yr = y => y == null ? "not dated" : y < 0 ? (-y) + " BC" : y < 1000 ? "AD " + y : String(y);
+const tip = document.getElementById("tip");
+function showTip(h, x, y) { tip.innerHTML = h; tip.style.display = "block"; const w = tip.offsetWidth; x = Math.max(w / 2 + 8, Math.min(innerWidth - w / 2 - 8, x)); tip.style.left = x + scrollX + "px"; tip.style.top = y + scrollY + "px"; }
+function hideTip() { tip.style.display = "none"; }
+document.addEventListener("click", hideTip);
+const NS = "http://www.w3.org/2000/svg";
+const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const lbl = (svg, x, y, s, cls = "lab", anchor = "start") => { const t = el("text", { x, y, class: cls, "text-anchor": anchor }, svg); t.textContent = s; return t; };
+const redraws = [];
+function resp(box, render) { let last = 0; const go = force => { const w = Math.max(280, Math.round(box.clientWidth)); if (!force && Math.abs(w - last) < 4) return; last = w; box.innerHTML = ""; render(w, w < 560); }; new ResizeObserver(() => go()).observe(box); go(); redraws.push(() => go(true)); }
+const isDark = () => { const r = document.documentElement; return r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const small = () => innerWidth < 900;
+const ERAS = SITE.eras, UND = ERAS.length - 1;
+const wdl = q => `<a href="https://www.wikidata.org/wiki/${q}" target="_blank" rel="noopener">Wikidata ${q}</a>`;
+
+/* hero mark: a lighthouse with its beams */
+(function () {
+  const g = document.getElementById("heroMark");
+  el("path", { d: "M60 26 L4 8 L4 40 Z", fill: "#D98E04", opacity: .28 }, g);
+  el("path", { d: "M60 26 L116 8 L116 40 Z", fill: "#D98E04", opacity: .28 }, g);
+  el("path", { d: "M10 112 Q35 104 60 112 T110 112", fill: "none", stroke: "#2F6FB0", "stroke-width": 3 }, g);
+  el("path", { d: "M44 108 L49 40 L71 40 L76 108 Z", fill: "#FFFEFA", stroke: "currentColor", "stroke-width": 2.6, "stroke-linejoin": "round" }, g);
+  el("path", { d: "M46.4 86 L73.6 86 L72.4 70 L47.6 70 Z M48.6 56 L71.4 56 L70.8 47 L49.2 47 Z", fill: "#B3202A" }, g);
+  el("rect", { x: 50, y: 20, width: 20, height: 14, fill: "#FFD27A", stroke: "currentColor", "stroke-width": 2.4 }, g);
+  el("path", { d: "M46 20 L60 9 L74 20 Z", fill: "#B3202A", stroke: "currentColor", "stroke-width": 2.4, "stroke-linejoin": "round" }, g);
+  el("path", { d: "M45 40 L75 40 L75 34 L45 34 Z", fill: "currentColor" }, g);
+})();
+
+/* ---------- map ---------- */
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+const ESRI_ATT = 'Tiles &copy; Esri, GEBCO, NOAA, National Geographic, Garmin, HERE, Geonames.org, and other contributors';
+const LYDEF = { base: "light", hills: false, hillK: 35, labels: true, labelK: 70, names: true, nameLvl: 1, cnames: false, borders: true, lights: true, inland: true, size: 2.5, glow: 60, stars: true };
+const LY = { ...LYDEF };
+try { Object.assign(LY, JSON.parse(localStorage.getItem("lh_layers") || "{}")); } catch (e) {}
+const saveLY = () => { try { localStorage.setItem("lh_layers", JSON.stringify(LY)); } catch (e) {} };
+const S = { col: "lamp", eras: new Set(ERAS.map((e, i) => i)), met: null };
+const HOME = () => small() ? [[40, 5], 1] : [[42, -8], 2];
+const map = L.map("map", { minZoom: 1, maxZoom: 15, maxBounds: [[-88, -220], [88, 220]], zoomSnap: .5 }).setView(...HOME());
+["hills:250", "fill:400", "labels:450", "pts:600", "names:620"].forEach(s => { const [n, z] = s.split(":"); map.createPane(n); map.getPane(n).style.zIndex = z; });
+["hills", "labels", "names", "pts", "fill"].forEach(n => map.getPane(n).style.pointerEvents = "none");
+let base = null, hills = null, labels = null; const names = L.layerGroup(), cnames = L.layerGroup(), stars = L.layerGroup();
+const night = () => LY.base === "night" || LY.base === "none";
+function setTiles() {
+  [base, labels, hills].forEach(l => { if (l) map.removeLayer(l); });
+  const urls = { light: ESRI + "Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", night: ESRI + "Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    ocean: ESRI + "Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}", satellite: ESRI + "World_Imagery/MapServer/tile/{z}/{y}/{x}" };
+  base = LY.base === "none" ? null : L.tileLayer(urls[LY.base], { maxZoom: 16, maxNativeZoom: LY.base === "satellite" ? 17 : 13, attribution: ESRI_ATT }).addTo(map);
+  if (LY.base === "none") map.attributionControl.addAttribution(ESRI_ATT);
+  hills = L.tileLayer(ESRI + "Elevation/World_Hillshade" + (night() ? "_Dark" : "") + "/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, maxNativeZoom: 16, pane: "hills" });
+  labels = L.tileLayer(LY.base === "ocean" ? ESRI + "Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}" : `${ESRI}Canvas/World_${night() ? "Dark" : "Light"}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 16, maxNativeZoom: 13, pane: "labels" });
+  const c = map.getContainer(); c.classList.toggle("nightmap", night());
+  document.querySelectorAll("#modeRow .btn").forEach(b => b.setAttribute("aria-pressed", (b.dataset.m === "night") === night()));
+  applyLayers();
+}
+function applyLayers() {
+  if (LY.hills) { hills.addTo(map); hills.setOpacity(Math.min(1, .1 + LY.hillK / 120)); } else map.removeLayer(hills);
+  if (LY.labels) { labels.addTo(map); labels.setOpacity(LY.labelK / 100); } else map.removeLayer(labels);
+  if (LY.names) names.addTo(map); else map.removeLayer(names);
+  if (LY.cnames) cnames.addTo(map); else map.removeLayer(cnames);
+  if (LY.stars) stars.addTo(map); else map.removeLayer(stars);
+  cLayer.setStyle(cStyle); placeNames(); dots.draw(); legend();
+}
+function placeNames() {
+  names.clearLayers(); cnames.clearLayers(); stars.clearLayers();
+  const z = map.getZoom(), bb = map.getBounds().pad(.05); const bxs = [];
+  if (LY.stars && z >= 4) STARS().forEach(([la, lo, t]) => { if (!bb.contains([la, lo])) return; const pt = map.latLngToContainerPoint([la, lo]), w = t.length * 6.8;
+    const bx = [pt.x + 5, pt.y - 9, pt.x + 9 + w, pt.y + 7]; if (bxs.some(o => bx[0] < o[2] && bx[2] > o[0] && bx[1] < o[3] && bx[3] > o[1])) return; bxs.push(bx);
+    L.marker([la, lo], { pane: "names", interactive: false, icon: L.divIcon({ className: "starL", html: "★ " + esc(t), iconSize: null, iconAnchor: [5, 8] }) }).addTo(stars); });
+  if (LY.names) {
+    const minPop = [[2, 8e6], [3, 3e6], [4, 1e6], [5, 4e5], [6, 1.5e5], [99, 1e5]].find(([zz]) => z < zz + (LY.nameLvl === 2 ? 1.5 : LY.nameLvl === 0 ? -1 : 0))[1] * (LY.nameLvl === 0 ? 2 : 1);
+    let n = 0;
+    for (const c of CITIES) {
+      if (c.pop < minPop || !bb.contains([c.lat, c.lon])) continue;
+      const pt = map.latLngToContainerPoint([c.lat, c.lon]), big = c.pop >= 5e6;
+      const bx = [pt.x - 4, pt.y - 8, pt.x + 10 + c.name.length * (big ? 6.9 : 6.3), pt.y + 7];
+      if (bxs.some(o => bx[0] < o[2] && bx[2] > o[0] && bx[1] < o[3] && bx[3] > o[1])) continue;
+      bxs.push(bx); L.marker([c.lat, c.lon], { pane: "names", interactive: false, keyboard: false, icon: L.divIcon({ className: "cityL" + (big ? "" : " s"), html: `<i></i>${esc(c.name)}`, iconSize: null, iconAnchor: [3, 6] }) }).addTo(names);
+      if (++n >= 110) break;
+    }
+  }
+  if (LY.cnames && z >= 3 && z < 7) {
+    WORLD.features.forEach(f => { const g = SITE.cpos[f.properties.iso]; if (!g || !bb.contains([g[1], g[0]])) return; const nm = (R.country.by_iso[f.properties.iso] || {}).name || f.properties.iso;
+      if (z < 4 && (g[2] || 0) < 2e7) return; const pt = map.latLngToContainerPoint([g[1], g[0]]), w = nm.length * 7.2;
+      const bx = [pt.x - w / 2, pt.y - 7, pt.x + w / 2, pt.y + 7]; if (bxs.some(o => bx[0] < o[2] && bx[2] > o[0] && bx[1] < o[3] && bx[3] > o[1])) return; bxs.push(bx);
+      L.marker([g[1], g[0]], { pane: "names", interactive: false, keyboard: false, icon: L.divIcon({ className: "cntL", html: esc(nm), iconSize: [w, 14], iconAnchor: [w / 2, 7] }) }).addTo(cnames); });
+  }
+}
+(function layerControl() {
+  const Ctl = L.Control.extend({ options: { position: "topright" }, onAdd() {
+    const d = L.DomUtil.create("div"); L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
+    d.innerHTML = `<button class="lyrBtn" aria-expanded="false">Map layers</button>
+<div class="lyrPanel" hidden>
+ <div class="row"><label style="font-weight:600">Base map</label><div class="sub"><select data-k="base" aria-label="Base map"><option value="light">Light grey (day)</option><option value="night">Dark grey (night)</option><option value="none">Night sea, outlines only</option><option value="ocean">Sea depth (bathymetry)</option><option value="satellite">Satellite</option></select></div></div>
+ <div class="row"><label><input type="checkbox" data-k="hills"> Hill shading</label><div class="sub"><span>strength</span><input type="range" data-k="hillK" min="10" max="100" step="5" aria-label="Hill shading strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="labels"> Sea and place labels</label><div class="sub"><span>strength</span><input type="range" data-k="labelK" min="20" max="100" step="5" aria-label="Map label strength"></div></div>
+ <div class="row"><label><input type="checkbox" data-k="names"> Bold town names</label><div class="sub"><span>how many</span><select data-k="nameLvl" aria-label="How many town names"><option value="0">Biggest only</option><option value="1">Some</option><option value="2">Lots</option></select></div></div>
+ <div class="row"><label><input type="checkbox" data-k="cnames"> Country names</label></div>
+ <div class="row"><label><input type="checkbox" data-k="borders"> Borders and coast outline</label></div>
+ <div class="hd">Lighthouses</div>
+ <div class="row"><label><input type="checkbox" data-k="lights"> Lighthouses</label></div>
+ <div class="row"><label><input type="checkbox" data-k="inland"> Lake and river lights</label></div>
+ <div class="row"><label><input type="checkbox" data-k="stars"> Oldest and tallest, named (zoom in)</label></div>
+ <div class="row"><label style="font-weight:600">Dot size</label><div class="sub"><span>size</span><input type="range" data-k="size" min="1" max="6" step=".5" aria-label="Dot size"></div></div>
+ <div class="row"><label style="font-weight:600">Glow at night</label><div class="sub"><span>strength</span><input type="range" data-k="glow" min="10" max="100" step="5" aria-label="Glow strength"></div></div>
+ <button class="reset">Reset layers</button>
+</div>`;
+    return d; } });
+  map.addControl(new Ctl());
+  const box = map.getContainer(), btn = box.querySelector(".lyrBtn"), pan = box.querySelector(".lyrPanel");
+  btn.onclick = () => { const o = pan.hidden; pan.hidden = !o; btn.setAttribute("aria-expanded", o); };
+  const sync = () => pan.querySelectorAll("[data-k]").forEach(i => { const k = i.dataset.k; if (i.type === "checkbox") i.checked = LY[k]; else i.value = LY[k]; });
+  pan.querySelectorAll("[data-k]").forEach(i => i.addEventListener(i.type === "range" ? "input" : "change", () => {
+    const k = i.dataset.k; LY[k] = i.type === "checkbox" ? i.checked : (k === "base" ? i.value : +i.value);
+    if (k === "hillK") LY.hills = true; if (k === "labelK") LY.labels = true; if (k === "nameLvl") LY.names = true;
+    sync(); saveLY(); if (k === "base") setTiles(); else applyLayers(); side();
+  }));
+  pan.querySelector(".reset").onclick = () => { Object.assign(LY, LYDEF); if (isDark()) LY.base = "night"; saveLY(); sync(); setTiles(); };
+  window.syncLayers = sync; sync();
+})();
+const Note = L.Control.extend({ options: { position: "bottomleft" }, onAdd() { const d = L.DomUtil.create("div", "mapnote"); d.id = "mapnote"; L.DomEvent.disableClickPropagation(d); return d; } });
+map.addControl(new Note());
+L.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
+
+function cStyle() { const n = night(); return { color: n ? "#3A4B60" : (css("--border") || "#999"), weight: LY.borders ? (n ? .7 : .6) : 0, fillColor: n ? "#121B27" : css("--land"), fillOpacity: LY.base === "none" ? 1 : 0, interactive: false }; }
+const cLayer = L.geoJSON(WORLD, { pane: "fill", style: cStyle, interactive: false }).addTo(map);
+
+/* ---------- lighthouses: one canvas; additive glow at night ---------- */
+let P = null, Z = -1, XY = null, VIS = new Int32Array(0), NV = 0, CNT = { n: 0, e: [] };
+const keep = p => S.eras.has(p[3]) && (LY.inland || !p[10]);
+const SPR = {};
+function sprite(col, r) {
+  const k = col + r; if (SPR[k]) return SPR[k];
+  const s = Math.ceil(r * 2 + 2), c = document.createElement("canvas"); c.width = c.height = s; const x = c.getContext("2d");
+  const g = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, r);
+  const [R0, G0, B0] = col.match(/\w\w/g).map(h => parseInt(h, 16));
+  g.addColorStop(0, `rgba(${R0},${G0},${B0},1)`); g.addColorStop(.25, `rgba(${R0},${G0},${B0},.45)`); g.addColorStop(.6, `rgba(${R0},${G0},${B0},.12)`); g.addColorStop(1, `rgba(${R0},${G0},${B0},0)`);
+  x.fillStyle = g; x.fillRect(0, 0, s, s); return SPR[k] = c;
+}
+const LAMP = "#FFB52E", LAMPDAY = "#D98E04";
+const colOf = p => S.col === "era" ? ERAS[p[3]][1] : (night() ? LAMP : LAMPDAY);
+const Dots = L.Layer.extend({
+  onAdd(m) { this._c = L.DomUtil.create("canvas", "dotcanvas"); m.getPane("pts").appendChild(this._c); m.on("moveend zoomend resize viewreset", this._reset, this); m.on("zoomstart", () => this._c.style.opacity = 0); this._reset(); },
+  _reset() { const s = map.getSize(), d = devicePixelRatio || 1; L.DomUtil.setPosition(this._c, map.containerPointToLayerPoint([0, 0])); this._c.width = s.x * d; this._c.height = s.y * d; this._c.style.width = s.x + "px"; this._c.style.height = s.y + "px"; this._c.style.opacity = 1; this.draw(); },
+  draw() {
+    if (!this._c) return; const ctx = this._c.getContext("2d"), d = devicePixelRatio || 1; ctx.setTransform(d, 0, 0, d, 0, 0); ctx.clearRect(0, 0, this._c.width, this._c.height); NV = 0;
+    if (!P) return;
+    const z = map.getZoom(); if (z !== Z) { Z = z; XY = new Float32Array(P.length * 2); P.forEach((p, i) => { const q = map.project([p[0], p[1]], z); XY[2 * i] = q.x; XY[2 * i + 1] = q.y; }); VIS = new Int32Array(P.length); }
+    const o = map.getPixelOrigin(), off = map.containerPointToLayerPoint([0, 0]), ox = o.x + off.x, oy = o.y + off.y, sz = map.getSize();
+    CNT = { n: 0, e: ERAS.map(() => 0) };
+    for (let i = 0; i < P.length; i++) {
+      const p = P[i]; if (!keep(p)) continue; CNT.n++; CNT.e[p[3]]++;
+      const x = XY[2 * i] - ox, yy = XY[2 * i + 1] - oy; if (x < -30 || yy < -30 || x > sz.x + 30 || yy > sz.y + 30) continue;
+      VIS[NV++] = i;
+    }
+    if (!LY.lights) return;
+    const r0 = LY.size * (z < 3 ? .75 : z < 5 ? 1 : z < 7 ? 1.3 : 1.7);
+    if (night()) {
+      // glow: additive sprites, a halo that grows as you zoom out so dense coasts merge into a line of light
+      ctx.globalCompositeOperation = "lighter";
+      const gr = r0 * (2.4 + 3 * LY.glow / 100), a = (.06 + .3 * LY.glow / 100) * (z < 2 ? .22 : z < 3 ? .3 : z < 4 ? .45 : z < 5 ? .55 : z < 7 ? .5 : z < 9 ? .7 : 1);
+      ctx.globalAlpha = a;
+      for (let k = 0; k < NV; k++) { const i = VIS[k], s = sprite(colOf(P[i]), gr); ctx.drawImage(s, XY[2 * i] - ox - s.width / 2, XY[2 * i + 1] - oy - s.height / 2); }
+      ctx.globalAlpha = 1;
+      for (let k = 0; k < NV; k++) { const i = VIS[k]; ctx.beginPath(); ctx.arc(XY[2 * i] - ox, XY[2 * i + 1] - oy, Math.max(.6, r0 * .38), 0, 7); ctx.fillStyle = `rgba(255,236,190,${Math.min(.9, a * 1.8)})`; ctx.fill(); }
+      ctx.globalCompositeOperation = "source-over";
+    } else {
+      ctx.lineWidth = .6; ctx.strokeStyle = "rgba(27,34,48,.55)";
+      for (let k = 0; k < NV; k++) { const i = VIS[k], p = P[i]; const r = r0 * (p[7] >= 5 ? 1.35 : 1);
+        ctx.beginPath(); ctx.arc(XY[2 * i] - ox, XY[2 * i + 1] - oy, r, 0, 7); ctx.fillStyle = colOf(p); ctx.globalAlpha = p[2] == null && S.col === "era" ? .65 : .92; ctx.fill(); ctx.globalAlpha = 1; if (r >= 2) ctx.stroke(); }
+    }
+    if (S.met != null) { const i = S.met; ctx.beginPath(); ctx.arc(XY[2 * i] - ox, XY[2 * i + 1] - oy, r0 + 7, 0, 7); ctx.strokeStyle = night() ? "#fff" : "#000"; ctx.lineWidth = 2.2; ctx.stroke(); }
+  }
+});
+const dots = new Dots().addTo(map);
+function hitDot(cp) {
+  if (!P || !NV || !LY.lights) return -1; const o = map.getPixelOrigin(), off = map.containerPointToLayerPoint([0, 0]), ox = o.x + off.x, oy = o.y + off.y;
+  let best = -1, bd = 90; for (let k = 0; k < NV; k++) { const i = VIS[k], dx = XY[2 * i] - ox - cp.x, dy = XY[2 * i + 1] - oy - cp.y, d = dx * dx + dy * dy - (P[i][7] >= 5 ? 8 : 0); if (d < bd) { bd = d; best = i; } }
+  return best;
+}
+const nm = p => p[4] || `No English label (${p[6]})`;
+const wtip = i => { const p = P[i]; return `<b>${esc(nm(p))}</b><br>${esc(p[5])} · ${p[2] == null ? "not dated" : "built " + yr(p[2])}`; };
+map.on("click", e => { const h = hitDot(e.containerPoint); if (h >= 0) pick(h, false); });
+map.on("mousemove", e => { const h = hitDot(e.containerPoint); map.getContainer().style.cursor = h >= 0 ? "pointer" : ""; if (h >= 0) { const r = map.getContainer().getBoundingClientRect(); showTip(wtip(h), r.left + e.containerPoint.x, r.top + e.containerPoint.y); } else hideTip(); });
+map.on("mouseout", hideTip);
+map.on("moveend", placeNames);
+let QI = null;
+fetch("data/points.json").then(r => r.json()).then(j => { P = j.rows; QI = new Map(P.map((p, i) => [p[6], i])); Z = -1; dots.draw(); side(); legend(); starLayer(); });
+
+/* named stars: oldest standing and tallest, placed by placeNames() */
+const STARS = () => R.oldest_standing.slice(0, 7).map(o => [o.lat, o.lon, `${o.name} · ${yr(o.year)}`]).concat(R.tallest.rows.slice(0, 5).filter(t => t.lat != null).map(t => [t.lat, t.lon, `${t.name} · ${t.m} m`]));
+function starLayer() { placeNames(); }
+/* ---------- controls ---------- */
+const press = (row, b) => document.querySelectorAll(row + " .btn").forEach(x => x.setAttribute("aria-pressed", x === b));
+document.querySelectorAll("#colRow .btn").forEach(b => b.onclick = () => { S.col = b.dataset.c; press("#colRow", b); dots.draw(); legend(); });
+document.querySelectorAll("#modeRow .btn").forEach(b => b.onclick = () => { LY.base = b.dataset.m === "night" ? "none" : "light"; saveLY(); window.syncLayers(); setTiles(); });
+(function eraRow() {
+  const row = document.getElementById("eraRow");
+  const all = document.createElement("button"); all.className = "btn"; all.textContent = "All"; all.setAttribute("aria-pressed", "true"); row.appendChild(all);
+  const bs = ERAS.map(([n, c], i) => { const b = document.createElement("button"); b.className = "btn"; b.innerHTML = `<i style="background:${c}"></i>${esc(n)}`; b.setAttribute("aria-pressed", "false"); b.dataset.g = i; row.appendChild(b); return b; });
+  const sync = () => { const allOn = S.eras.size === ERAS.length; all.setAttribute("aria-pressed", allOn); bs.forEach(b => b.setAttribute("aria-pressed", !allOn && S.eras.has(+b.dataset.g))); dots.draw(); side(); };
+  all.onclick = () => { S.eras = new Set(ERAS.map((g, i) => i)); sync(); };
+  bs.forEach(b => b.onclick = () => { const g = +b.dataset.g; if (S.eras.size === ERAS.length) S.eras = new Set([g]); else if (S.eras.has(g)) { S.eras.delete(g); if (!S.eras.size) S.eras = new Set(ERAS.map((x, i) => i)); } else S.eras.add(g); sync(); });
+  window.resetEras = () => { S.eras = new Set(ERAS.map((g, i) => i)); sync(); };
+})();
+function legend() {
+  const e = document.getElementById("legend"); let h = "";
+  if (S.col === "era") h = ERAS.map(x => `<span><i style="background:${x[1]}"></i>${esc(x[0])}</span>`).join("");
+  else h = `<span><i style="background:${night() ? LAMP : LAMPDAY};${night() ? "box-shadow:0 0 6px 3px rgba(255,181,46,.6)" : ""}"></i>a lighthouse (where many crowd, the coast glows)</span>`;
+  h += `<span>larger dots: lights with 5 or more Wikipedia articles (day map)</span>`;
+  e.innerHTML = h;
+}
+function note(h) { document.getElementById("mapnote").innerHTML = h || ""; }
+function hval(s) { return s ? s.split("|").join(" or ") : ""; }
+function side() {
+  const box = document.getElementById("side"); let h = "";
+  if (S.met != null && P) {
+    const p = P[S.met], tm = SITE.tall_m[p[6]], st = SITE.status[p[6]];
+    h = `<button class="back">Back</button><h4>${esc(p[5])}</h4><div class="big">${esc(nm(p))}</div><table>
+<tr><td>Built or first lit</td><td>${p[2] == null ? "not dated" : yr(p[2])}${p[11] && p[11].includes("|") ? `<br><small>Wikidata also gives ${esc(p[11].split("|").slice(1).map(Number).map(yr).join(", "))}</small>` : ""}</td></tr>
+${st ? `<tr><td>Today</td><td>${esc(st[0])}${st[1] ? `<br><small>${esc(st[1])}</small>` : ""}</td></tr>` : ""}
+<tr><td>Height</td><td>${tm ? tm + " m <small>(Wikipedia list of tallest lighthouses)</small>" : p[8] ? esc(hval(p[8])) + " <small>(Wikidata; unit not in my extract, usually metres)</small>" : "not recorded"}</td></tr>
+${p[9] ? `<tr><td>Focal height</td><td>${esc(hval(p[9]))} <small>(height of the light above the sea; unit as above)</small></td></tr>` : ""}
+<tr><td>Setting</td><td>${p[10] ? "lake or river" : "sea coast"}</td></tr>
+<tr><td>Wikipedia articles</td><td>${p[7]}</td></tr><tr><td>Place</td><td>${p[0].toFixed(4)}, ${p[1].toFixed(4)}</td></tr></table><p>${wdl(p[6])}</p>`;
+  } else {
+    h = `<h4>On the map now</h4><div class="big">${fmt(CNT.n)}</div><p class="sub">lighthouses${S.eras.size < ERAS.length ? ", selected periods" : ""}${LY.inland ? "" : ", sea lights only"}</p><table>` +
+      ERAS.map((e, i) => `<tr><td><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${e[1]};margin-right:6px"></i>${esc(e[0])}</td><td class="num">${fmt(CNT.e[i])}</td></tr>`).join("") + `</table>`;
+    h += `<h4>Oldest still standing</h4><ul>` + R.oldest_standing.slice(0, 7).map(o => `<li><span class="go" data-q="${o.qid}">${esc(o.name)}</span> <small>${yr(o.year)}</small></li>`).join("") + `</ul>`;
+    h += `<h4>Tallest</h4><ul>` + R.tallest.rows.slice(0, 5).filter(t => t.qid).map(t => `<li><span class="go" data-q="${t.qid}">${esc(t.name)}</span> <small>${t.m} m</small></li>`).join("") + `</ul>`;
+    h += `<h4>Densest coasts</h4><ul>` + R.regions.top.slice(0, 4).concat(R.regions.top_outside_nordic.slice(0, 2)).map(r => `<li><span class="go" data-r="${esc(r.name)}|${r.iso}">${esc(r.name)}</span> <small>${f1(r.per100)} per 100 km</small></li>`).join("") + `</ul>`;
+    h += `<p class="sub">Try the night glow. Click a light for its record. Base map, hill shading and names are under Map layers.</p>`;
+    note("");
+  }
+  box.innerHTML = h;
+  const b = box.querySelector(".back"); if (b) b.onclick = () => { S.met = null; map.closePopup(); dots.draw(); side(); };
+  box.querySelectorAll("[data-q]").forEach(e => e.onclick = () => byQ(e.dataset.q));
+  box.querySelectorAll("[data-r]").forEach(e => e.onclick = () => goRegion(e.dataset.r));
+}
+function toMap() { if (small()) document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "start" }); }
+function pick(i, move) {
+  S.met = i; const p = P[i];
+  if (!keep(p)) { window.resetEras(); LY.inland = true; window.syncLayers(); }
+  if (move) { map.setView([p[0], p[1]], Math.max(map.getZoom(), 9)); toMap(); }
+  const tm = SITE.tall_m[p[6]];
+  L.popup({ maxWidth: 290 }).setLatLng([p[0], p[1]]).setContent(`<b>${esc(nm(p))}</b><br>${esc(p[5])}<br>${p[2] == null ? "Date not recorded" : "Built or first lit " + yr(p[2])}<br>${tm ? "Height " + tm + " m" : p[8] ? `Height ${esc(hval(p[8]))} <span class="pm">(unit not given; usually m)</span>` : "Height not recorded"}<br>${wdl(p[6])}`).openOn(map);
+  note(`<b>${esc(nm(p))}</b>, ${esc(p[5])}`); dots.draw(); side();
+}
+function byQ(q) { if (!QI || !QI.has(q)) return; document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => pick(QI.get(q), true), 250); }
+function goRegion(k) {
+  const [n, iso] = k.split("|"); if (!P) return; let la = [], lo = [];
+  const r = R.regions.top.concat(R.regions.top_outside_nordic).find(x => x.name === n && x.iso === iso);
+  const cn = (R.country.by_iso[iso] || {}).name;
+  // the lights of that region are those of the country inside its box: approximate with lights of the country near the region's centre
+  const ids = SITE.regpts[r.id] || [];
+  ids.forEach(i => { la.push(P[i][0]); lo.push(P[i][1]); });
+  if (la.length) map.fitBounds([[Math.min(...la), Math.min(...lo)], [Math.max(...la), Math.max(...lo)]], { padding: [20, 20], maxZoom: 9 });
+  note(`<b>${esc(n)}</b>, ${esc(cn || "")}: ${fmt(r.sea)} sea lights on ${fmt(r.coast_km)} km of coast`); toMap();
+}
+(function focusRow() {
+  const row = document.getElementById("focusRow");
+  const F = [["World", null], ["Scandinavia and the Baltic", [[53.5, 4], [66.5, 31]]], ["British Isles", [[49.5, -11], [61, 2.5]]], ["Channel and Biscay", [[43, -10], [51.5, 3]]], ["Mediterranean", [[30, -6], [46, 36]]], ["US East Coast", [[24.5, -82], [45.5, -66]]], ["Great Lakes", [[41, -93], [49.5, -75.5]]], ["Japan", [[30, 128], [46, 146]]], ["Southern Africa", [[-36, 10], [-15, 42]]], ["Australia and New Zealand", [[-48, 112], [-10, 179]]]];
+  F.forEach(([n, b]) => { const e = document.createElement("button"); e.className = "btn"; e.textContent = n; e.onclick = () => { if (b) map.fitBounds(b); else map.setView(...HOME()); toMap(); }; row.appendChild(e); });
+})();
+
+/* ---------- search ---------- */
+(function search() {
+  const q = document.getElementById("q"), sug = document.getElementById("sug"); let items = [], sel = -1;
+  const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const CN = Object.values(R.country.by_iso);
+  function run() {
+    const t = norm(q.value.trim()); items = []; sel = -1; if (t.length < 2) { sug.style.display = "none"; return; }
+    CN.filter(c => norm(c.name).startsWith(t)).slice(0, 3).forEach(c => items.push({ k: "c", c }));
+    if (P) { const hits = []; for (let i = 0; i < P.length; i++) { const n = norm(P[i][4] || P[i][6]); const at = n.indexOf(t); if (at >= 0) hits.push([at === 0 ? 0 : 1, -P[i][7], i]); } hits.sort((a, b) => a[0] - b[0] || a[1] - b[1]); hits.slice(0, 9).forEach(h => items.push({ k: "p", i: h[2] })); }
+    sug.innerHTML = items.map((it, j) => it.k === "c" ? `<li role="option" data-j="${j}">${esc(it.c.name)} <span>country · ${fmt(it.c.n)} lights</span></li>` : `<li role="option" data-j="${j}">${esc(nm(P[it.i]))} <span>${esc(P[it.i][5])} · ${P[it.i][2] == null ? "not dated" : yr(P[it.i][2])}</span></li>`).join("") || `<li>No match</li>`;
+    sug.style.display = "block"; sug.querySelectorAll("[data-j]").forEach(li => li.onclick = () => go(+li.dataset.j));
+  }
+  function go(j) {
+    const it = items[j]; if (!it) return; sug.style.display = "none"; q.value = it.k === "c" ? it.c.name : nm(P[it.i]);
+    if (it.k === "p") { pick(it.i, true); return; }
+    const la = [], lo = []; P.forEach(p => { if (p[5] === it.c.name) { la.push(p[0]); lo.push(p[1]); } });
+    if (la.length) { la.sort((a, b) => a - b); lo.sort((a, b) => a - b); const qn = a => a[Math.floor(a.length * .02)], qx = a => a[Math.ceil(a.length * .98) - 1]; map.fitBounds([[qn(la), qn(lo)], [qx(la), qx(lo)]], { padding: [20, 20], maxZoom: 9 }); }
+    S.met = null; side(); note(`<b>${esc(it.c.name)}</b>: ${fmt(it.c.n)} lighthouses${it.c.per1000 != null ? `, ${f1(it.c.per1000)} sea lights per 1,000 km of coast` : ""}`); toMap();
+  }
+  q.addEventListener("input", run);
+  q.addEventListener("keydown", e => { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); sel = Math.max(0, Math.min(items.length - 1, sel + (e.key === "ArrowDown" ? 1 : -1))); sug.querySelectorAll("li").forEach((li, j) => li.setAttribute("aria-selected", j === sel)); } else if (e.key === "Enter") { e.preventDefault(); if (!items.length) run(); go(sel < 0 ? 0 : sel); } else if (e.key === "Escape") sug.style.display = "none"; });
+  document.addEventListener("click", e => { if (!e.target.closest(".searchbox")) sug.style.display = "none"; });
+})();
+
+/* ---------- charts ---------- */
+function bars(box, rows, opt) {
+  resp(box, (W, sm) => {
+    const lw = sm ? 112 : 170, rh = 22, H = rows.length * rh + 26, svg = el("svg", { viewBox: `0 0 ${W} ${H}` }, box);
+    const mx = Math.max(...rows.map(r => r.v)), sx = v => lw + (W - lw - 64) * v / mx;
+    rows.forEach((r, i) => { const y = 4 + i * rh;
+      const t = lbl(svg, lw - 8, y + 14, sm && r.label.length > 15 ? r.label.slice(0, 14) + "." : r.label, "lab", "end");
+      const b = el("rect", { x: lw, y: y + 3, width: Math.max(1, sx(r.v) - lw), height: rh - 7, fill: r.c || css("--ink"), rx: 1 }, svg);
+      if (r.c2 != null) el("rect", { x: lw, y: y + 3, width: Math.max(0, sx(r.v2) - lw), height: rh - 7, fill: r.c2 }, svg);
+      lbl(svg, sx(r.v) + 6, y + 14, opt.f(r.v), "lab m");
+      const hit = el("rect", { x: 0, y, width: W, height: rh, fill: "transparent" }, svg);
+      hit.addEventListener("mousemove", e => showTip(r.tip, e.clientX, e.clientY)); hit.addEventListener("mouseleave", hideTip);
+      if (r.click) { hit.style.cursor = "pointer"; hit.addEventListener("click", r.click); }
+    });
+  });
+}
+/* timeline */
+let TLM = "all";
+(function timeline() {
+  const T = R.timeline, box = document.getElementById("tlChart"), G = T.groups;
+  const draw = () => resp(box, (W, sm) => {
+    const H = sm ? 300 : 360, ml = 44, mr = 8, mt = 34, mb = 30, svg = el("svg", { viewBox: `0 0 ${W} ${H}` }, box);
+    const ks = G.map(g => g[0]).filter(k => TLM === "all" || k !== "SWE");
+    const tot = T.decades.map((d, i) => ks.reduce((a, k) => a + T.by_group[k][i], 0));
+    const mx = Math.ceil(Math.max(...tot) / 100) * 100, n = T.decades.length, bw = (W - ml - mr) / n;
+    const sy = v => H - mb - (H - mb - mt) * v / mx;
+    for (let v = 0; v <= mx; v += 100) { el("line", { x1: ml, x2: W - mr, y1: sy(v), y2: sy(v), stroke: css("--rule") }, svg); lbl(svg, ml - 6, sy(v) + 4, fmt(v), "lab m s", "end"); }
+    T.decades.forEach((d, i) => { let acc = 0; const x = ml + i * bw;
+      ks.forEach(k => { const v = T.by_group[k][i]; if (!v) return; const g = G.find(x => x[0] === k); el("rect", { x: x + 1, y: sy(acc + v), width: Math.max(1, bw - 2), height: sy(acc) - sy(acc + v), fill: g[2] }, svg); acc += v; });
+      if (d % 50 === 0) lbl(svg, x + bw / 2, H - mb + 16, d, "lab m s", "middle");
+      const hit = el("rect", { x, y: mt, width: bw, height: H - mb - mt, fill: "transparent" }, svg);
+      hit.addEventListener("mousemove", e => showTip(`<b>${d}s</b>: ${fmt(tot[i])} new lights<br>` + ks.map(k => `${esc(G.find(x => x[0] === k)[1])}: ${fmt(T.by_group[k][i])}`).join("<br>"), e.clientX, e.clientY)); hit.addEventListener("mouseleave", hideTip);
+    });
+    const ann = (d, txt, dy) => { const i = T.decades.indexOf(d), x = ml + i * bw + bw / 2; const y = sy(tot[i]) - 8 - (dy || 0); lbl(svg, x, y, txt, "lab b s", "middle"); };
+    if (TLM === "all") { ann(1900, `${T.all_1900s_dec} in the 1900s`); ann(1940, `Sweden ${T.swe_peak_n}`, 14); }
+    else { ann(1870, `${T.nosw_1870s} in the 1870s`); ann(2010, `${T.nosw_2010s}`); }
+  });
+  draw();
+  document.getElementById("tlLegend").innerHTML = G.map(g => `<span><i class="sq" style="background:${g[2]}"></i>${esc(g[1])}</span>`).join("");
+  document.querySelectorAll("#tlRow .btn").forEach(b => b.onclick = () => { TLM = b.dataset.t; press("#tlRow", b); box.innerHTML = ""; draw(); });
+})();
+/* countries */
+(function countries() {
+  const box = document.getElementById("ctChart"); let k = "n";
+  const draw = () => { box.innerHTML = "";
+    const src = k === "n" ? R.country.top.slice(0, 20) : R.country.dense.slice(0, 20);
+    bars(box, src.map(c => ({ label: c.name, v: k === "n" ? c.n : c.per1000, c: k === "n" ? css("--ink") : css("--lamp"), v2: k === "n" ? c.inland : null, c2: k === "n" ? css("--cool") : null,
+      tip: `<b>${esc(c.name)}</b><br>${fmt(c.n)} lighthouses (${fmt(c.inland)} on lakes and rivers)<br>${fmt(c.coast_km)} km of coast${c.per1000 != null ? `<br>${f1(c.per1000)} sea lights per 1,000 km` : ""}<br>${f1(c.sl_le1_pct)}% with at most one Wikipedia article` })),
+      { f: v => k === "n" ? fmt(v) : f1(v) });
+    if (k === "n") box.insertAdjacentHTML("beforeend", `<div class="legend"><span><i class="sq" style="background:var(--ink)"></i>all lighthouses</span><span><i class="sq" style="background:var(--cool)"></i>of which on lakes and rivers</span></div>`);
+  };
+  draw(); document.querySelectorAll("#ctRow .btn").forEach(b => b.onclick = () => { k = b.dataset.k; press("#ctRow", b); draw(); });
+})();
+/* regions table */
+(function regions() {
+  const t = document.getElementById("regTable");
+  t.innerHTML = `<tr><th>Region</th><th class="r">Lights</th><th class="r">Coast km</th><th class="r">Per 100 km</th></tr>` +
+    R.regions.top.map(r => `<tr data-q="${esc(r.name)}|${r.iso}"><td>${esc(r.name)}<br><small style="color:var(--muted)">${esc(r.country)}</small></td><td class="r">${fmt(r.sea)}</td><td class="r">${fmt(r.coast_km)}</td><td class="r"><b>${f1(r.per100)}</b></td></tr>`).join("");
+  t.querySelectorAll("tr[data-q]").forEach(tr => tr.onclick = () => { document.getElementById("atlas").scrollIntoView({ behavior: "smooth" }); setTimeout(() => goRegion(tr.dataset.q), 300); });
+})();
+/* oldest table */
+(function oldest() {
+  const t = document.getElementById("oldTable");
+  t.innerHTML = `<tr><th>Year</th><th>Lighthouse</th><th>Country</th><th>Today</th></tr>` + R.oldest.map(o => `<tr data-q="${o.qid}"><td class="r">${yr(o.year)}</td><td>${esc(o.name)}${o.note ? `<br><small style="color:var(--muted)">${esc(o.note)}</small>` : ""}</td><td>${esc(o.country)}</td><td><span class="tag ${o.status.replace(/ /g, "")}">${esc(o.status.toLowerCase())}</span></td></tr>`).join("");
+  t.querySelectorAll("tr[data-q]").forEach(tr => tr.onclick = () => byQ(tr.dataset.q));
+})();
+/* tallest */
+bars(document.getElementById("tallChart"), R.tallest.rows.map(t => ({ label: t.name.replace(" Lighthouse", "").replace(" lighthouse", "").replace(" Light", ""), v: t.m, c: /stone|granite|brick/i.test(t.build) ? css("--ink") : css("--lamp"),
+  tip: `<b>${esc(t.name)}</b><br>${t.m} m (${t.ft} ft), ${esc(t.build.toLowerCase())}<br>${esc(t.place)}, ${esc(t.country)} · ${esc(t.year)}${t.remark ? "<br>" + esc(t.remark) : ""}`, click: t.qid ? () => byQ(t.qid) : null })), { f: v => v + " m" });
+document.getElementById("tallChart").insertAdjacentHTML("afterend", `<div class="legend"><span><i class="sq" style="background:var(--ink)"></i>stone, granite or brick</span><span><i class="sq" style="background:var(--lamp)"></i>concrete, iron or steel</span></div>`);
+/* coverage */
+bars(document.getElementById("covChart"), R.coverage.most_bare.concat(R.coverage.least_bare).map(c => ({ label: c.name, v: c.sl_le1_pct, c: c.sl_le1_pct > 50 ? css("--hot") : css("--cool"),
+  tip: `<b>${esc(c.name)}</b><br>${fmt(c.n)} lighthouses; ${f1(c.sl_le1_pct)}% with at most one Wikipedia article; ${fmt(c.no_label)} without an English label` })), { f: v => Math.round(v) + "%" });
+
+/* ---------- theme ---------- */
+document.getElementById("theme").onclick = () => { const r = document.documentElement; r.dataset.theme = isDark() ? "light" : "dark"; redraws.forEach(f => f()); legend(); cLayer.setStyle(cStyle); dots.draw(); };
+try { if (isDark() && !localStorage.getItem("lh_layers")) LY.base = "none"; } catch (e) {}
+setTiles(); side(); legend();
+</script>
+/*FULLSCREEN*/
+</body>
+</html>
